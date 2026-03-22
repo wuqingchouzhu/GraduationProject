@@ -5,12 +5,11 @@ import com.qiao.demo.inventory.dao.UserMapper;
 import com.qiao.demo.inventory.model.User;
 import com.qiao.demo.inventory.config.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import java.awt.*;
 
-@Component
+//@Component
 public class LoginWindow extends JFrame {
 
     @Autowired

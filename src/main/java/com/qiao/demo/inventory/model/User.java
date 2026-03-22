@@ -1,4 +1,4 @@
-package com.qiao.demo.inventory.model;
+package com.qiao.demo.inventory.model; // 👈 这一行绝对不能少！
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -12,7 +12,6 @@ public class User {
     private String password;
     private String role;
 
-    // Getter 和 Setter 方法
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     public String getUsername() { return username; }

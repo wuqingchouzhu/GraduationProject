@@ -5,7 +5,6 @@ import com.qiao.demo.inventory.model.Product;
 import com.qiao.demo.inventory.service.ProductService;
 import com.qiao.demo.inventory.config.UserContext;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -13,7 +12,7 @@ import java.awt.*;
 import java.util.List;
 import java.util.Vector;
 
-@Component
+//@Component
 public class MainWindow extends JFrame {
 
     @Autowired
