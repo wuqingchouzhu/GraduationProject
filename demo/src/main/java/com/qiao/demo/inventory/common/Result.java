@@ -1,12 +1,18 @@
 package com.qiao.demo.inventory.common;
 
-/**
- * 统一的 API 响应结果封装类
- */
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "统一API响应结果")
 public class Result<T> {
-    private Integer code; // 状态码：200代表成功，500代表失败
-    private String message; // 提示信息
-    private T data; // 真正要返回的数据（比如商品列表）
+
+    @Schema(description = "状态码：200代表成功，500代表失败")
+    private Integer code;
+
+    @Schema(description = "提示信息")
+    private String message;
+
+    @Schema(description = "响应数据")
+    private T data;
 
     // 成功时的快捷方法
     public static <T> Result<T> success(T data) {

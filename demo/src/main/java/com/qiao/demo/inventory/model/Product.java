@@ -5,40 +5,59 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.Version;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
 import java.math.BigDecimal;
 
+@Schema(description = "商品信息")
 @TableName("product_info")
 public class Product {
 
+    @Schema(description = "商品ID")
     @TableId(type = IdType.AUTO)
     private Integer id;
+
+    @Schema(description = "商品编号", example = "P001")
+    @NotBlank(message = "商品编号不能为空")
     private String productCode;
+
+    @Schema(description = "商品名称", example = "示例商品")
+    @NotBlank(message = "商品名称不能为空")
     private String productName;
+
+    @Schema(description = "当前库存数量")
     private Integer stockLevel;
+
+    @Schema(description = "单价")
     private BigDecimal unitPrice;
 
-    // 乐观锁版本号，MyBatis-Plus 会自动维护
+    @Schema(description = "乐观锁版本号")
     @Version
     private Integer version;
 
-    // 动态库存预警字段
+    @Schema(description = "日均需求量")
     @TableField("avg_daily_demand")
-    private BigDecimal avgDailyDemand = BigDecimal.ZERO;          // 日均需求量
+    private BigDecimal avgDailyDemand = BigDecimal.ZERO;
     
+    @Schema(description = "需求标准差")
     @TableField("demand_std_dev")
-    private BigDecimal demandStdDev = BigDecimal.ZERO;            // 需求标准差
+    private BigDecimal demandStdDev = BigDecimal.ZERO;
     
+    @Schema(description = "补货天数")
     @TableField("lead_time")
-    private Integer leadTime = 1;                   // 补货天数
+    private Integer leadTime = 1;
     
+    @Schema(description = "预警触发点")
     @TableField("reorder_point")
-    private BigDecimal reorderPoint = BigDecimal.ZERO;            // 预警触发点
+    private BigDecimal reorderPoint = BigDecimal.ZERO;
     
+    @Schema(description = "预警模式：0-系统自动计算，1-人工锁定")
     @TableField("is_manual_reorder")
-    private Integer isManualReorder = 0;            // 预警模式标志：0-系统自动计算，1-人工锁定
+    private Integer isManualReorder = 0;
     
+    @Schema(description = "预警状态：0-正常，1-预警中")
     @TableField("alert_status")
-    private Integer alertStatus = 0;                // 预警状态：0-正常，1-预警中
+    private Integer alertStatus = 0;
 
     // --- Getter & Setter ---
     public Integer getId() { return id; }

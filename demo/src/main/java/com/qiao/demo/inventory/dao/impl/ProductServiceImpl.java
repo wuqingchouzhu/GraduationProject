@@ -1,6 +1,7 @@
 package com.qiao.demo.inventory.dao.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.qiao.demo.inventory.common.BusinessException;
 import com.qiao.demo.inventory.dao.ProductMapper;
 import com.qiao.demo.inventory.model.Product;
 import com.qiao.demo.inventory.service.ProductService;
@@ -23,11 +24,16 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, rollbackFor = Exception.class)
     public boolean stockIn(Integer productId, int quantity) {
+        return stockIn(productId, quantity, null);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, rollbackFor = Exception.class)
+    public boolean stockIn(Integer productId, int quantity, String messageId) {
         if (quantity <= 0) {
-            throw new RuntimeException("入库失败：入库数量必须大于0");
+            throw new BusinessException("入库失败：入库数量必须大于0");
         }
 
-        // 1. 原子增加库存
         boolean updateSuccess = this.lambdaUpdate()
                 .eq(Product::getId, productId)
                 .setSql("stock_level = stock_level + " + quantity)
@@ -36,20 +42,18 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         if (!updateSuccess) {
             Product currentProduct = this.getById(productId);
             if (currentProduct == null) {
-                throw new RuntimeException("入库失败：商品不存在，ID=" + productId);
+                throw new BusinessException("入库失败：商品不存在，ID=" + productId);
             }
             throw new RuntimeException("并发冲突：商品数据已被修改，请刷新后重试！");
         }
 
-        // 2. 获取入库后的商品信息，检查预警状态
         Product updatedProduct = this.getById(productId);
         if (updatedProduct != null) {
-            checkAndUpdateAlertStatus(updatedProduct, 0); // 传入0表示只检查状态恢复
+            checkAndUpdateAlertStatus(updatedProduct, 0);
         }
 
-        // 3. 写入入库流水记录
-        String sql = "INSERT INTO stock_in_record (product_id, quantity, operator, create_time) VALUES (?, ?, ?, NOW())";
-        jdbcTemplate.update(sql, productId, quantity, "系统管理员");
+        String sql = "INSERT INTO stock_in_record (product_id, quantity, operator, create_time, message_id) VALUES (?, ?, ?, NOW(), ?)";
+        jdbcTemplate.update(sql, productId, quantity, "系统管理员", messageId);
 
         return true;
     }
@@ -57,35 +61,44 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, rollbackFor = Exception.class)
     public boolean stockOut(Integer productId, int quantity) {
-        // 1. 原子扣减库存，同时检查库存是否充足
-        boolean updateSuccess = this.lambdaUpdate()
-                .eq(Product::getId, productId)
-                .ge(Product::getStockLevel, quantity)
-                .setSql("stock_level = stock_level - " + quantity)
-                .update();
+        return stockOut(productId, quantity, "默认出库客户", null);
+    }
+    
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, rollbackFor = Exception.class)
+    public boolean stockOut(Integer productId, int quantity, String customerName) {
+        return stockOut(productId, quantity, customerName, null);
+    }
+
+    @Override
+    @Transactional(isolation = Isolation.REPEATABLE_READ, rollbackFor = Exception.class)
+    public boolean stockOut(Integer productId, int quantity, String customerName, String messageId) {
+        if (quantity <= 0) {
+            throw new BusinessException("出库失败：出库数量必须大于0");
+        }
         
-        if (!updateSuccess) {
-            // 获取当前库存信息以提供更详细的错误信息
-            Product currentProduct = this.getById(productId);
-            if (currentProduct == null) {
-                throw new RuntimeException("出库失败：商品不存在，ID=" + productId);
-            }
-            if (currentProduct.getStockLevel() < quantity) {
-                throw new RuntimeException("出库失败：库存不足！当前仅剩 " + currentProduct.getStockLevel() + " 件。");
-            }
+        Product product = this.getById(productId);
+        if (product == null) {
+            throw new BusinessException("出库失败：商品不存在，ID=" + productId);
+        }
+        if (product.getStockLevel() < quantity) {
+            throw new BusinessException("出库失败：库存不足！当前仅剩 " + product.getStockLevel() + " 件。");
+        }
+        
+        product.setStockLevel(product.getStockLevel() - quantity);
+        boolean updated = this.updateById(product);
+        
+        if (!updated) {
             throw new RuntimeException("并发冲突：商品数据已被修改，请刷新后重试！");
         }
-
-        // 2. 获取扣减后的商品信息，检查预警状态
-        Product updatedProduct = this.getById(productId);
-        if (updatedProduct != null) {
-            checkAndUpdateAlertStatus(updatedProduct, quantity);
-        }
-
-        // 3. 写入出库流水记录
-        String sql = "INSERT INTO stock_out_record (product_id, quantity, customer_name, create_time) VALUES (?, ?, ?, NOW())";
-        jdbcTemplate.update(sql, productId, quantity, "默认出库客户");
-
+        
+        String sql = "INSERT INTO stock_out_record (product_id, quantity, customer_name, create_time, message_id) VALUES (?, ?, ?, NOW(), ?)";
+        jdbcTemplate.update(sql, productId, quantity, 
+                customerName != null ? customerName : "默认出库客户",
+                messageId);
+        
+        checkAndUpdateAlertStatus(product, quantity);
+        
         return true;
     }
 

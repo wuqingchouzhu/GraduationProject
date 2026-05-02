@@ -3,13 +3,22 @@ package com.qiao.demo.inventory.model; // 👈 这一行绝对不能少！
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import io.swagger.v3.oas.annotations.media.Schema;
 
+@Schema(description = "系统用户")
 @TableName("sys_user")
 public class User {
+    @Schema(description = "用户ID")
     @TableId(type = IdType.AUTO)
     private Integer id;
+
+    @Schema(description = "用户名")
     private String username;
+
+    @Schema(description = "密码")
     private String password;
+
+    @Schema(description = "角色")
     private String role;
 
     public Integer getId() { return id; }
