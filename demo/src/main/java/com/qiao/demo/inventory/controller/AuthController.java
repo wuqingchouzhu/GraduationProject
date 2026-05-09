@@ -1,6 +1,7 @@
 package com.qiao.demo.inventory.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.qiao.demo.inventory.common.PasswordUtil;
 import com.qiao.demo.inventory.common.Result;
 import com.qiao.demo.inventory.dto.LoginDTO;
 import com.qiao.demo.inventory.model.User;
@@ -30,11 +31,23 @@ public class AuthController {
         String password = loginDTO.getPassword();
 
         QueryWrapper<User> wrapper = new QueryWrapper<>();
-        wrapper.eq("username", username).eq("password", password);
-        
+        wrapper.eq("username", username);
+
         User user = userService.getOne(wrapper);
 
-        if (user != null) {
+        if (user == null) {
+            return Result.error("用户名或密码错误");
+        }
+
+        boolean valid = PasswordUtil.verify(password, user.getPassword());
+
+        if (!valid && password.equals(user.getPassword())) {
+            user.setPassword(PasswordUtil.hash(password));
+            userService.updateById(user);
+            valid = true;
+        }
+
+        if (valid) {
             Map<String, Object> data = new HashMap<>();
             data.put("username", user.getUsername());
             data.put("role", user.getRole());

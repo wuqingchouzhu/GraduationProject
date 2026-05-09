@@ -1,13 +1,11 @@
 <template>
   <div class="admin-users">
-    <!-- Toolbar -->
     <div class="toolbar">
       <el-button type="primary" :icon="Plus" @click="openAddDialog">
         新增用户
       </el-button>
     </div>
 
-    <!-- User Table -->
     <el-table
       :data="users"
       border
@@ -43,7 +41,6 @@
       </el-table-column>
     </el-table>
 
-    <!-- Add User Dialog -->
     <el-dialog
       v-model="showAddDialog"
       title="新增用户"
@@ -93,7 +90,6 @@
       </template>
     </el-dialog>
 
-    <!-- Delete User Password Dialog -->
     <el-dialog
       v-model="showDeleteDialog"
       title="安全验证"
@@ -138,11 +134,9 @@ import { getUsers, addUser, deleteUser } from '@/api'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 
-// ----- Table data -----
 const users = ref([])
 const loading = ref(false)
 
-// ----- Add User -----
 const showAddDialog = ref(false)
 const addFormRef = ref(null)
 const addLoading = ref(false)
@@ -171,7 +165,6 @@ const addRules = {
   ]
 }
 
-// ----- Delete User -----
 const showDeleteDialog = ref(false)
 const deleteFormRef = ref(null)
 const deleteLoading = ref(false)
@@ -187,7 +180,6 @@ const deleteRules = {
   ]
 }
 
-// ----- Methods -----
 async function fetchUsers() {
   loading.value = true
   try {
@@ -225,7 +217,6 @@ async function handleAddUser() {
     showAddDialog.value = false
     fetchUsers()
   } catch {
-    // Interceptor already shows ElMessage.error for failures
   } finally {
     addLoading.value = false
   }
@@ -254,13 +245,11 @@ async function handleDeleteUser() {
     if (err.message && err.message.includes('不能删除自己')) {
       ElMessage.warning('不能删除自己')
     }
-    // Other errors handled by interceptor
   } finally {
     deleteLoading.value = false
   }
 }
 
-// ----- Lifecycle -----
 onMounted(() => {
   fetchUsers()
 })

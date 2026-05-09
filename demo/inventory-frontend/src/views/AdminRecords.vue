@@ -1,6 +1,5 @@
 <template>
   <div class="admin-records">
-    <!-- 筛选栏 -->
     <div class="filter-bar">
       <el-select
         v-model="filters.type"
@@ -28,7 +27,6 @@
       </el-button>
     </div>
 
-    <!-- 记录表格 -->
     <el-table
       :data="records"
       border
@@ -60,7 +58,6 @@
       </el-table-column>
     </el-table>
 
-    <!-- 分页 -->
     <div class="pagination-wrapper">
       <el-pagination
         v-model:current-page="pagination.page"
@@ -80,24 +77,20 @@ import { ref, reactive, onMounted } from 'vue'
 import { getStockRecords } from '@/api'
 import { Search, Refresh } from '@element-plus/icons-vue'
 
-// ---- 筛选 ----
 const filters = reactive({
   type: '',
   productId: null
 })
 
-// ---- 分页 ----
 const pagination = reactive({
   page: 1,
   size: 20,
   total: 0
 })
 
-// ---- 数据 ----
 const records = ref([])
 const loading = ref(false)
 
-// ---- 方法 ----
 async function fetchRecords() {
   loading.value = true
   try {
@@ -148,7 +141,6 @@ function formatTime(time) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
-// ---- 生命周期 ----
 onMounted(() => {
   fetchRecords()
 })
@@ -178,7 +170,6 @@ onMounted(() => {
   margin-top: 16px;
 }
 
-/* 行高亮 */
 :deep(.row-in) {
   background-color: #f0f9eb !important;
 }

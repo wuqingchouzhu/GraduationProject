@@ -1,6 +1,7 @@
 package com.qiao.demo.inventory.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.qiao.demo.inventory.common.PasswordUtil;
 import com.qiao.demo.inventory.common.Result;
 import com.qiao.demo.inventory.model.User;
 import com.qiao.demo.inventory.service.UserService;
@@ -8,7 +9,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -22,19 +22,25 @@ public class UserController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    /**
-     * 验证管理员密码 — 使用参数化查询防SQL注入
-     */
     private boolean verifyAdminPassword(String adminPassword) {
         if (adminPassword == null || adminPassword.isEmpty()) {
             return false;
         }
-        String sql = "SELECT COUNT(*) FROM sys_user WHERE username = 'admin' AND password = ? AND role = 'ADMIN'";
-        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, adminPassword);
-        return count != null && count > 0;
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.eq("username", "admin").eq("role", "ADMIN");
+        User admin = userService.getOne(wrapper);
+        if (admin == null) {
+            return false;
+        }
+        if (PasswordUtil.verify(adminPassword, admin.getPassword())) {
+            return true;
+        }
+        if (adminPassword.equals(admin.getPassword())) {
+            admin.setPassword(PasswordUtil.hash(adminPassword));
+            userService.updateById(admin);
+            return true;
+        }
+        return false;
     }
 
     @Operation(summary = "查询所有用户", description = "获取所有系统用户列表（不包含密码字段）")
@@ -59,7 +65,6 @@ public class UserController {
         String password = (String) body.get("password");
         String role = (String) body.get("role");
 
-        // 参数校验
         if (username == null || username.trim().isEmpty()) {
             return Result.error("用户名不能为空");
         }
@@ -67,22 +72,19 @@ public class UserController {
             return Result.error("密码不能为空");
         }
 
-        // 验证管理员密码
         if (!verifyAdminPassword(adminPassword)) {
             return Result.error("管理员密码验证失败");
         }
 
-        // 检查用户名唯一性
         QueryWrapper<User> wrapper = new QueryWrapper<>();
         wrapper.eq("username", username);
         if (userService.count(wrapper) > 0) {
             return Result.error("用户名已存在");
         }
 
-        // 创建新用户
         User newUser = new User();
         newUser.setUsername(username.trim());
-        newUser.setPassword(password);
+        newUser.setPassword(PasswordUtil.hash(password));
         newUser.setRole(role != null ? role : "USER");
         userService.save(newUser);
 
@@ -100,18 +102,15 @@ public class UserController {
             @RequestBody Map<String, Object> body) {
         String adminPassword = (String) body.get("adminPassword");
 
-        // 验证管理员密码
         if (!verifyAdminPassword(adminPassword)) {
             return Result.error("管理员密码验证失败");
         }
 
-        // 检查用户是否存在
         User targetUser = userService.getById(id);
         if (targetUser == null) {
             return Result.error("用户不存在");
         }
 
-        // 不能删除管理员自己
         if ("admin".equals(targetUser.getUsername())) {
             return Result.error("不能删除自己");
         }

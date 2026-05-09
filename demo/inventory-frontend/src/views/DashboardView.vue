@@ -1,6 +1,5 @@
 <template>
   <div class="dashboard-page" v-loading="loading">
-    <!-- Header -->
     <div class="dashboard-header">
       <div class="header-content">
         <h2 class="page-title">仪表盘</h2>
@@ -8,7 +7,6 @@
       </div>
     </div>
 
-    <!-- Stats Row 1: 4 cards -->
     <el-row :gutter="20" class="stats-row">
       <el-col :span="6">
         <div class="stat-card stat-card--blue">
@@ -60,7 +58,6 @@
       </el-col>
     </el-row>
 
-    <!-- Stats Row 2: Full-width card -->
     <el-row :gutter="20" class="stats-row">
       <el-col :span="24">
         <div class="stat-card stat-card--purple stat-card--full">
@@ -114,7 +111,6 @@ onMounted(async () => {
       stats.totalStockValue = res.data.totalStockValue ?? 0
     }
   } catch (e) {
-    // data remains as defaults
   } finally {
     loading.value = false
   }
@@ -126,7 +122,6 @@ onMounted(async () => {
   padding: 0;
 }
 
-/* ===== Header ===== */
 .dashboard-header {
   margin-bottom: 24px;
 }
@@ -150,7 +145,6 @@ onMounted(async () => {
   margin: 0;
 }
 
-/* ===== Stats Row ===== */
 .stats-row {
   margin-bottom: 20px;
 }
@@ -159,7 +153,6 @@ onMounted(async () => {
   margin-bottom: 0;
 }
 
-/* ===== Stat Card ===== */
 .stat-card {
   background: #fff;
   border-radius: 12px;
@@ -190,7 +183,6 @@ onMounted(async () => {
   padding: 24px 28px;
 }
 
-/* ===== Stat Left (Icon) ===== */
 .stat-left {
   flex-shrink: 0;
   display: flex;
@@ -198,7 +190,6 @@ onMounted(async () => {
   justify-content: center;
 }
 
-/* ===== Stat Right (Text) ===== */
 .stat-right {
   display: flex;
   flex-direction: column;
@@ -231,7 +222,6 @@ onMounted(async () => {
   margin-top: 2px;
 }
 
-/* ===== Loading Override ===== */
 .dashboard-page :deep(.el-loading-mask) {
   background-color: rgba(240, 242, 245, 0.6);
 }

@@ -1,6 +1,5 @@
 <template>
   <div class="product-page">
-    <!-- Toolbar -->
     <div class="toolbar">
       <div class="toolbar-left">
         <el-input
@@ -19,7 +18,6 @@
       </div>
     </div>
 
-    <!-- Product Table -->
     <el-table
       v-loading="loading"
       :data="pagedData"
@@ -89,7 +87,6 @@
       </el-table-column>
     </el-table>
 
-    <!-- Pagination -->
     <div class="pagination-wrap">
       <el-pagination
         v-model:current-page="currentPage"
@@ -101,7 +98,6 @@
       />
     </div>
 
-    <!-- Stock In Dialog -->
     <el-dialog
       v-model="stockInVisible"
       title="商品入库"
@@ -133,7 +129,6 @@
       </template>
     </el-dialog>
 
-    <!-- Stock Out Dialog -->
     <el-dialog
       v-model="stockOutVisible"
       title="商品出库"
@@ -165,7 +160,6 @@
       </template>
     </el-dialog>
 
-    <!-- Add Product Dialog -->
     <el-dialog
       v-if="auth.isAdmin"
       v-model="addVisible"
@@ -204,7 +198,6 @@
       </template>
     </el-dialog>
 
-    <!-- Edit Product Dialog -->
     <el-dialog
       v-model="editVisible"
       title="编辑商品"
@@ -260,7 +253,6 @@ import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
 
-// ── Data ──────────────────────────────────────────
 const loading = ref(false)
 const products = ref([])
 const searchKeyword = ref('')
@@ -268,7 +260,6 @@ const currentPage = ref(1)
 const pageSize = ref(10)
 const sortState = ref({ prop: '', order: '' })
 
-// ── Computed ──────────────────────────────────────
 const filteredData = computed(() => {
   const kw = searchKeyword.value.trim().toLowerCase()
   if (!kw) return products.value
@@ -294,7 +285,6 @@ const pagedData = computed(() => {
   return sorted.slice(start, start + pageSize.value)
 })
 
-// ── Fetch ─────────────────────────────────────────
 async function fetchProducts() {
   loading.value = true
   try {
@@ -305,19 +295,16 @@ async function fetchProducts() {
   }
 }
 
-// ── Sort ─────────────────────────────────────────
 function handleSortChange({ prop, order }) {
   sortState.value.prop = prop || ''
   sortState.value.order = order || ''
   currentPage.value = 1
 }
 
-// ── Row class ─────────────────────────────────────
 function rowClassName({ row }) {
   return row.alertStatus === 1 ? 'row-alert' : ''
 }
 
-// ── Stock tag ─────────────────────────────────────
 function stockTagType(row) {
   if (row.alertStatus === 1) return 'danger'
   if (row.stockLevel < 20) return 'warning'
@@ -325,7 +312,6 @@ function stockTagType(row) {
   return 'success'
 }
 
-// ── Format ────────────────────────────────────────
 function formatPrice(val) {
   if (val === null || val === undefined) return '¥0.00'
   const n = Number(val)
@@ -337,7 +323,6 @@ function formatNumber(val) {
   return Number(val).toFixed(1)
 }
 
-// ── Stock In ──────────────────────────────────────
 const stockInVisible = ref(false)
 const stockOutVisible = ref(false)
 const stockLoading = ref(false)
@@ -366,7 +351,6 @@ async function submitStockIn() {
   }
 }
 
-// ── Stock Out ──────────────────────────────────────
 function openStockOut(row) {
   currentProduct.value = row
   stockForm.quantity = 1
@@ -389,7 +373,6 @@ async function submitStockOut() {
   }
 }
 
-// ── Add Product ───────────────────────────────────
 const addVisible = ref(false)
 const addLoading = ref(false)
 const addFormRef = ref(null)
@@ -431,7 +414,6 @@ async function submitAdd() {
   }
 }
 
-// ── Delete ────────────────────────────────────────
 async function handleDelete(row) {
   try {
     await ElMessageBox.confirm(
@@ -440,18 +422,17 @@ async function handleDelete(row) {
       { confirmButtonText: '确认删除', cancelButtonText: '取消', type: 'warning' }
     )
   } catch {
-    return // user cancelled
+    return
   }
   try {
     await deleteProduct(row.id)
     ElMessage.success('删除成功')
     await fetchProducts()
   } catch {
-    // error already shown by interceptor
+
   }
 }
 
-// ── Edit Product ─────────────────────────────────
 const editVisible = ref(false)
 const editLoading = ref(false)
 const editFormRef = ref(null)
@@ -498,7 +479,6 @@ async function submitEdit() {
   }
 }
 
-// ── Init ──────────────────────────────────────────
 onMounted(fetchProducts)
 </script>
 
@@ -507,7 +487,6 @@ onMounted(fetchProducts)
   padding: 20px;
 }
 
-/* ── Toolbar ─────────────────────── */
 .toolbar {
   display: flex;
   justify-content: space-between;
@@ -534,13 +513,11 @@ onMounted(fetchProducts)
   width: 260px;
 }
 
-/* ── Table ───────────────────────── */
 .product-table {
   border-radius: 6px;
   overflow: hidden;
 }
 
-/* Alert row highlight */
 :deep(.row-alert) {
   background-color: #fef0f0 !important;
 }
@@ -548,7 +525,6 @@ onMounted(fetchProducts)
   background-color: #fde2e2 !important;
 }
 
-/* Stock cell */
 .stock-cell {
   display: flex;
   flex-direction: column;
@@ -561,21 +537,18 @@ onMounted(fetchProducts)
   color: #909399;
 }
 
-/* Price cell */
 .price-cell {
   font-variant-numeric: tabular-nums;
   font-weight: 500;
   color: #303133;
 }
 
-/* Action buttons */
 .action-btns {
   display: flex;
   gap: 4px;
   justify-content: center;
 }
 
-/* ── Pagination ──────────────────── */
 .pagination-wrap {
   display: flex;
   justify-content: flex-end;

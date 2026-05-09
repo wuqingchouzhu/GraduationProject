@@ -1,13 +1,11 @@
 <template>
   <div class="login-wrapper" @keyup.enter="handleLogin">
     <div class="login-card">
-      <!-- Logo / Branding -->
       <div class="logo-section">
         <h1 class="logo-title">进销存管理系统</h1>
         <p class="logo-subtitle">Inventory Management System</p>
       </div>
 
-      <!-- Login Form -->
       <el-form
         ref="formRef"
         :model="form"
@@ -50,7 +48,6 @@
         </el-form-item>
       </el-form>
 
-      <!-- Footer -->
       <p class="login-footer">© 2024 进销存管理系统</p>
     </div>
   </div>
@@ -98,8 +95,7 @@ async function handleLogin() {
     ElMessage.success('登录成功')
     router.push('/')
   } catch (err) {
-    // 拦截器已弹窗提示的异常（BizException / 网络错误），无需重复提示
-    // 此处仅兜底非标准异常
+
     if (!err?.response?.data?.message && err?.message !== '网络错误') {
       ElMessage.error(err?.message || '登录失败，请检查用户名和密码')
     }
@@ -110,7 +106,6 @@ async function handleLogin() {
 </script>
 
 <style scoped>
-/* ====== Full-screen Gradient Background ====== */
 .login-wrapper {
   min-height: 100vh;
   display: flex;
@@ -121,7 +116,6 @@ async function handleLogin() {
   overflow: hidden;
 }
 
-/* Decorative ambient glow behind the card */
 .login-wrapper::before {
   content: '';
   position: absolute;
@@ -134,7 +128,6 @@ async function handleLogin() {
   pointer-events: none;
 }
 
-/* ====== Login Card ====== */
 .login-card {
   width: 420px;
   background: #ffffff;
@@ -159,7 +152,6 @@ async function handleLogin() {
   }
 }
 
-/* ====== Logo Section ====== */
 .logo-section {
   text-align: center;
   margin-bottom: 36px;
@@ -182,12 +174,10 @@ async function handleLogin() {
   margin: 0;
 }
 
-/* ====== Form ====== */
 :deep(.el-form-item) {
   margin-bottom: 22px;
 }
 
-/* Custom label style */
 :deep(.el-form-item__label) {
   font-size: 13px;
   color: #4a5568;
@@ -195,7 +185,6 @@ async function handleLogin() {
   padding-bottom: 4px;
 }
 
-/* Input styling */
 :deep(.el-input__wrapper) {
   border-radius: 8px;
   box-shadow: 0 0 0 1px #e2e8f0 inset;
@@ -210,7 +199,6 @@ async function handleLogin() {
   box-shadow: 0 0 0 1px #0f3460 inset, 0 0 0 3px rgba(15, 52, 96, 0.1);
 }
 
-/* Input prefix icon color */
 :deep(.el-input__prefix .el-icon) {
   color: #a0aec0;
 }
@@ -219,7 +207,6 @@ async function handleLogin() {
   color: #0f3460;
 }
 
-/* ====== Button ====== */
 .btn-item {
   margin-bottom: 16px !important;
 }
@@ -255,7 +242,6 @@ async function handleLogin() {
   letter-spacing: 4px;
 }
 
-/* ====== Footer ====== */
 .login-footer {
   text-align: center;
   font-size: 12px;

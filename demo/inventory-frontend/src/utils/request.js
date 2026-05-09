@@ -7,7 +7,6 @@ const request = axios.create({
   headers: { 'Content-Type': 'application/json' }
 })
 
-// 响应拦截器
 request.interceptors.response.use(
   response => {
     const res = response.data

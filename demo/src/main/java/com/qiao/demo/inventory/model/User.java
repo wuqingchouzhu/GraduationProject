@@ -1,4 +1,4 @@
-package com.qiao.demo.inventory.model; // 👈 这一行绝对不能少！
+package com.qiao.demo.inventory.model;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;

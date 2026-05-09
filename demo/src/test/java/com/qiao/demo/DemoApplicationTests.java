@@ -23,10 +23,8 @@ class DemoApplicationTests {
     void testSelectAll() {
         System.out.println("---- 开始执行全表扫描测试 ----");
         
-        // 1. 调用 Service 层查询所有数据
         List<Product> list = productService.list();
         
-        // 2. 学术规范：使用断言（Assertion）验证结果，而非单纯看控制台
         assertNotNull(list, "查询结果集不应为 null");
         
         if (list.isEmpty()) {
@@ -42,17 +40,14 @@ class DemoApplicationTests {
     void testInsertProduct() {
         System.out.println("---- 开始执行新增商品测试 ----");
         
-        // 1. 模拟创建一个商品对象
         Product product = new Product();
         product.setProductCode("TEST-002");
         product.setProductName("测试商品-导师演示");
         product.setStockLevel(100);
         product.setUnitPrice(new BigDecimal("99.99"));
 
-        // 2. 保存到数据库
         boolean success = productService.save(product);
         
-        // 3. 验证是否保存成功
         assertTrue(success, "商品插入数据库应当返回成功");
         System.out.println("插入成功，生成的 ID 为：" + product.getId());
     }

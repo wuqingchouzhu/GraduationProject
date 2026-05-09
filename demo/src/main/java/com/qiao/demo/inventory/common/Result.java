@@ -14,7 +14,6 @@ public class Result<T> {
     @Schema(description = "响应数据")
     private T data;
 
-    // 成功时的快捷方法
     public static <T> Result<T> success(T data) {
         Result<T> result = new Result<>();
         result.setCode(200);
@@ -27,7 +26,6 @@ public class Result<T> {
         return success(null);
     }
 
-    // 失败时的快捷方法
     public static <T> Result<T> error(String message) {
         Result<T> result = new Result<>();
         result.setCode(500);
@@ -35,7 +33,6 @@ public class Result<T> {
         return result;
     }
 
-    // Getter 和 Setter
     public Integer getCode() { return code; }
     public void setCode(Integer code) { this.code = code; }
     public String getMessage() { return message; }

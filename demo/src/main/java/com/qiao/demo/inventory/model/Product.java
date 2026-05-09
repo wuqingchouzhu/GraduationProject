@@ -59,7 +59,6 @@ public class Product {
     @TableField("alert_status")
     private Integer alertStatus = 0;
 
-    // --- Getter & Setter ---
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 

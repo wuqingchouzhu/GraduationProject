@@ -86,17 +86,14 @@ public class AdminController {
             @RequestParam(defaultValue = "20") Integer size) {
 
         try {
-            // --- build count SQL ---
             StringBuilder countSql = new StringBuilder();
             List<Object> countParams = new ArrayList<>();
             buildUnionCountQuery(countSql, countParams, type, productId);
 
-            // --- build data SQL ---
             StringBuilder dataSql = new StringBuilder();
             List<Object> dataParams = new ArrayList<>();
             buildUnionDataQuery(dataSql, dataParams, type, productId);
 
-            // add pagination
             int offset = (page - 1) * size;
             dataSql.append(" LIMIT ? OFFSET ?");
             dataParams.add(size);
@@ -122,35 +119,29 @@ public class AdminController {
         try {
             Map<String, Object> stats = new HashMap<>();
 
-            // 总商品数
             Long totalProducts = jdbcTemplate.queryForObject(
                     "SELECT COUNT(*) FROM product_info", Long.class);
             stats.put("totalProducts", totalProducts != null ? totalProducts : 0L);
 
-            // 低库存预警数
             Long lowStockCount = jdbcTemplate.queryForObject(
                     "SELECT COUNT(*) FROM product_info WHERE alert_status = 1", Long.class);
             stats.put("lowStockCount", lowStockCount != null ? lowStockCount : 0L);
 
-            // 本月入库量
             java.math.BigDecimal inSum = jdbcTemplate.queryForObject(
                     "SELECT COALESCE(SUM(quantity), 0) FROM stock_in_record WHERE create_time >= DATE_FORMAT(CURDATE(), '%Y-%m-01')",
                     java.math.BigDecimal.class);
             stats.put("totalStockInThisMonth", inSum != null ? inSum.longValue() : 0L);
 
-            // 本月出库量
             java.math.BigDecimal outSum = jdbcTemplate.queryForObject(
                     "SELECT COALESCE(SUM(quantity), 0) FROM stock_out_record WHERE create_time >= DATE_FORMAT(CURDATE(), '%Y-%m-01')",
                     java.math.BigDecimal.class);
             stats.put("totalStockOutThisMonth", outSum != null ? outSum.longValue() : 0L);
 
-            // 库存总价值（库存量 × 单价）
             java.math.BigDecimal val = jdbcTemplate.queryForObject(
                     "SELECT COALESCE(SUM(stock_level * unit_price), 0) FROM product_info",
                     java.math.BigDecimal.class);
             stats.put("totalStockValue", val != null ? val : java.math.BigDecimal.ZERO);
 
-            // 商品总数（前端便捷别名）
             stats.put("productCount", totalProducts != null ? totalProducts : 0L);
 
             return Result.success(stats);
@@ -161,7 +152,6 @@ public class AdminController {
 
     private void buildUnionCountQuery(StringBuilder sql, List<Object> params, String type, Integer productId) {
         if (type == null) {
-            // count both
             sql.append("SELECT SUM(cnt) FROM (");
             sql.append("SELECT COUNT(*) AS cnt FROM stock_in_record sir");
             appendProductIdWhere(sql, params, productId, "sir");
@@ -182,14 +172,12 @@ public class AdminController {
                 params.add(productId);
             }
         } else {
-            // unknown type → return empty
             sql.append("SELECT 0");
         }
     }
 
     private void buildUnionDataQuery(StringBuilder sql, List<Object> params, String type, Integer productId) {
         if (type == null) {
-            // union both
             sql.append("SELECT * FROM (");
             sql.append("SELECT sir.id, sir.product_id, p.product_name, sir.quantity, 'N/A' AS customer_name, 'STOCK_IN' AS type, ");
             sql.append("DATE_FORMAT(sir.create_time, '%Y-%m-%d %H:%i:%s') AS create_time, sir.message_id ");
@@ -222,7 +210,6 @@ public class AdminController {
             }
             sql.append(" ORDER BY sor.create_time DESC");
         } else {
-            // unknown type → return empty
             sql.append("SELECT id, product_id, product_name, quantity, customer_name, type, create_time, message_id FROM (SELECT 1 AS id, 0 AS product_id, '' AS product_name, 0 AS quantity, '' AS customer_name, '' AS type, '' AS create_time, '' AS message_id) t WHERE 1=0");
         }
     }

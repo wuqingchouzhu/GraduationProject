@@ -1,8 +1,6 @@
 <template>
   <el-container class="layout-container">
-    <!-- ====== Sidebar ====== -->
     <el-aside class="layout-sidebar" width="220px">
-      <!-- Brand -->
       <div class="sidebar-brand">
         <div class="brand-icon-wrapper">
           <el-icon :size="22"><Box /></el-icon>
@@ -10,7 +8,6 @@
         <span class="brand-text">进销存系统</span>
       </div>
 
-      <!-- Navigation -->
       <el-menu
         :default-active="route.path"
         class="sidebar-menu"
@@ -45,9 +42,7 @@
       </el-menu>
     </el-aside>
 
-    <!-- ====== Main Area ====== -->
     <el-container class="layout-main-wrapper">
-      <!-- Header -->
       <el-header class="layout-header" height="56px">
         <div class="header-left">
           <span class="header-title">{{ route.meta.title || '进销存系统' }}</span>
@@ -79,7 +74,6 @@
         </div>
       </el-header>
 
-      <!-- Content -->
       <el-main class="layout-main">
         <router-view />
       </el-main>
@@ -109,13 +103,11 @@ function handleLogout() {
 </script>
 
 <style scoped>
-/* ====== Layout Container ====== */
 .layout-container {
   height: 100vh;
   overflow: hidden;
 }
 
-/* ====== Sidebar ====== */
 .layout-sidebar {
   background-color: #1a1a2e;
   display: flex;
@@ -126,7 +118,6 @@ function handleLogout() {
   z-index: 10;
 }
 
-/* Brand */
 .sidebar-brand {
   padding: 22px 20px 18px;
   display: flex;
@@ -156,7 +147,6 @@ function handleLogout() {
   white-space: nowrap;
 }
 
-/* Menu */
 .sidebar-menu {
   border-right: none !important;
   flex: 1;
@@ -188,7 +178,6 @@ function handleLogout() {
   font-size: 18px;
 }
 
-/* Menu Divider */
 .menu-divider {
   padding: 16px 28px 6px;
   flex-shrink: 0;
@@ -202,13 +191,11 @@ function handleLogout() {
   font-weight: 600;
 }
 
-/* ====== Main Wrapper ====== */
 .layout-main-wrapper {
   flex-direction: column;
   overflow: hidden;
 }
 
-/* ====== Header ====== */
 .layout-header {
   background: #fff;
   border-bottom: 1px solid #e8eaed;
@@ -238,7 +225,6 @@ function handleLogout() {
   gap: 20px;
 }
 
-/* User Info */
 .user-info {
   display: flex;
   align-items: center;
@@ -266,7 +252,6 @@ function handleLogout() {
   font-weight: 500;
 }
 
-/* Logout Button */
 .logout-btn {
   color: #e94560;
   font-size: 13px;
@@ -279,7 +264,6 @@ function handleLogout() {
   background-color: rgba(233, 69, 96, 0.08);
 }
 
-/* ====== Main Content ====== */
 .layout-main {
   padding: 20px;
   background: #f0f2f5;

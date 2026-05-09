@@ -10,7 +10,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.scheduling.annotation.Scheduled;
 
 import java.math.RoundingMode;
 import java.util.List;
@@ -19,7 +18,7 @@ import java.util.List;
 public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> implements ProductService {
 
     @Autowired
-    private JdbcTemplate jdbcTemplate; // 用于执行流水表的插入 SQL
+    private JdbcTemplate jdbcTemplate;
 
     @Override
     @Transactional(isolation = Isolation.REPEATABLE_READ, rollbackFor = Exception.class)
@@ -102,11 +101,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         return true;
     }
 
-    /**
-     * 检查并更新预警状态
-     * @param product 扣减后的商品信息
-     * @param deductQuantity 扣减数量
-     */
     private void checkAndUpdateAlertStatus(Product product, Integer deductQuantity) {
         if (product == null || product.getReorderPoint() == null) {
             return;
@@ -115,23 +109,17 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         java.math.BigDecimal currentStock = java.math.BigDecimal.valueOf(product.getStockLevel());
         java.math.BigDecimal reorderPoint = product.getReorderPoint();
         
-        // 检查库存是否低于预警线
         if (currentStock.compareTo(reorderPoint) < 0) {
-            // 库存低于预警线，检查是否需要触发报警
             if (product.getAlertStatus() == 0) {
-                // 从正常状态变为预警状态，触发报警
                 product.setAlertStatus(1);
                 this.updateById(product);
                 
-                // 发送预警通知
                 sendAlertNotification(product, 
                     currentStock.doubleValue(), 
                     reorderPoint.doubleValue());
             }
         } else {
-            // 库存高于或等于预警线，检查是否需要恢复状态
             if (product.getAlertStatus() == 1) {
-                // 从预警状态恢复为正常状态
                 product.setAlertStatus(0);
                 this.updateById(product);
                 System.out.println("商品 " + product.getProductName() + " 库存已恢复至预警线以上，预警状态已重置。");
@@ -139,12 +127,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         }
     }
     
-    /**
-     * 发送预警通知（待集成实际的通知服务）
-     * @param product 商品信息
-     * @param currentStock 当前库存
-     * @param reorderPoint 预警点
-     */
     private void sendAlertNotification(Product product, double currentStock, double reorderPoint) {
         String message = String.format(
             "【库存预警】商品【%s】(ID:%d) 当前库存 %.2f 低于预警线 %.2f，请及时补货！",
@@ -154,14 +136,13 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             reorderPoint
         );
         System.out.println("发送预警通知：" + message);
-        // TODO: 集成邮件、短信、钉钉等实际通知服务
     }
     
     @Override
     public void calculateDynamicReorderPoint(Integer productId) {
         Product product = this.getById(productId);
         if (product == null || product.getIsManualReorder() == 1) {
-            return; // 商品不存在或人工锁定，不更新
+            return;
         }
         
         java.math.BigDecimal avgDailyDemand = product.getAvgDailyDemand();
@@ -169,27 +150,22 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         Integer leadTime = product.getLeadTime();
         
         if (avgDailyDemand == null || demandStdDev == null || leadTime == null || leadTime <= 0) {
-            return; // 数据不完整，跳过计算
+            return;
         }
         
-        // 计算公式：R = (avg_daily_demand × lead_time) + (1.65 × demand_std_dev × √(lead_time))
         java.math.BigDecimal leadTimeDecimal = java.math.BigDecimal.valueOf(leadTime);
         double sqrtLeadTime = Math.sqrt(leadTime);
         java.math.BigDecimal sqrtLeadTimeDecimal = java.math.BigDecimal.valueOf(sqrtLeadTime);
         
-        // avg_daily_demand × lead_time
         java.math.BigDecimal demandDuringLeadTime = avgDailyDemand.multiply(leadTimeDecimal);
         
-        // 1.65 × demand_std_dev × √(lead_time)
         java.math.BigDecimal safetyStock = java.math.BigDecimal.valueOf(1.65)
                 .multiply(demandStdDev)
                 .multiply(sqrtLeadTimeDecimal);
         
-        // 预警触发点 = 需求 + 安全库存
         java.math.BigDecimal reorderPoint = demandDuringLeadTime.add(safetyStock)
                 .setScale(4, RoundingMode.HALF_UP);
         
-        // 更新商品预警点
         product.setReorderPoint(reorderPoint);
         this.updateById(product);
         
@@ -198,7 +174,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     
     @Override
     public void batchCalculateReorderPoints() {
-        // 查询所有需要计算预警点的商品
         List<Product> products = this.lambdaQuery()
                 .eq(Product::getIsManualReorder, 0)
                 .list();
@@ -284,11 +259,9 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         java.math.BigDecimal reorderPoint = product.getReorderPoint();
         if (reorderPoint == null) return false;
         
-        // 扣减后的预估库存
         java.math.BigDecimal afterDeduct = java.math.BigDecimal.valueOf(product.getStockLevel() - deductQuantity);
         
         if (afterDeduct.compareTo(reorderPoint) < 0) {
-            // 扣减后库存将低于预警线，触发报警
             if (product.getAlertStatus() == 0) {
                 product.setAlertStatus(1);
                 this.updateById(product);
@@ -296,7 +269,6 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
                 return true;
             }
         } else {
-            // 扣减后库存不低于预警线，恢复预警状态
             if (product.getAlertStatus() == 1) {
                 product.setAlertStatus(0);
                 this.updateById(product);
@@ -306,25 +278,5 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         return false;
     }
     
-    /**
-     * 定时任务：每日凌晨2点执行需求统计和预警点计算
-     */
-    @Scheduled(cron = "0 0 2 * * ?")
-    @Transactional
-    public void dailyStatisticsTask() {
-        System.out.println("开始执行动态库存预警统计任务：" + new java.util.Date());
-        
-        try {
-            // 1. 批量更新需求统计数据
-            batchUpdateDemandStatistics();
-            
-            // 2. 批量计算预警点
-            batchCalculateReorderPoints();
-            
-            System.out.println("动态库存预警统计任务执行完成");
-        } catch (Exception e) {
-            System.err.println("动态库存预警统计任务执行失败：" + e.getMessage());
-            e.printStackTrace();
-        }
-    }
+
 }
